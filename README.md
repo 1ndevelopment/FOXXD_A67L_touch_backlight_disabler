@@ -91,7 +91,7 @@ If `input2` turns out to be your primary touchscreen (or the only way you have o
    ```
    or, to disable only this module:
    ```sh
-   adb shell touch /data/adb/modules/<module_id>/disable
+   adb shell touch /data/adb/modules/touchscreen_backlight_disabler/disable
    ```
    Then reboot:
    ```sh
@@ -110,7 +110,7 @@ If `input2` turns out to be your primary touchscreen (or the only way you have o
    - Boot into recovery (usually Power + Volume Up, or Power + Volume Down depending on device).
    - Use TWRP's file manager or terminal to delete or disable the module directory:
      ```sh
-     rm -rf /data/adb/modules/<module_id>
+     rm -rf /data/adb/modules/touchscreen_backlight_disabler
      ```
    - Reboot to system.
 
