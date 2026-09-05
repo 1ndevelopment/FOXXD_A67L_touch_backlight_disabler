@@ -80,6 +80,47 @@ An `ERROR:` line instead tells you whether the node never appeared (wrong path f
 
 Remove the module from Magisk Manager's **Modules** tab and reboot. This restores default behavior for both the input device and the backlight - no other files on the system are modified.
 
+## Recovery if you get locked out
+
+If `input2` turns out to be your primary touchscreen (or the only way you have of interacting with the device), you can end up unable to unlock or navigate the phone after this module loads. Here's how to recover, roughly in order of how likely you are to have it available:
+
+1. **ADB (fastest, if already enabled)**
+   If USB debugging was on before you flashed the module, connect the device to a PC and remove the module without touching the screen:
+   ```sh
+   adb shell magisk --remove-modules
+   ```
+   or, to disable only this module:
+   ```sh
+   adb shell touch /data/adb/modules/<module_id>/disable
+   ```
+   Then reboot:
+   ```sh
+   adb reboot
+   ```
+
+2. **Magisk's "disable all modules" boot combo**
+   Most Magisk-patched devices support forcing a boot with all modules disabled by holding a volume key during boot:
+   - Power off the device fully.
+   - Power on, and as soon as you see the boot logo/animation, hold **Volume Down** (some devices use **Volume Up**) until it finishes booting.
+   - This boots with all Magisk modules disabled, restoring normal touch input so you can uninstall the module properly from Magisk Manager.
+   - Exact key and timing vary by device/ROM - check your device's XDA thread if this doesn't work on the first try.
+
+3. **Recovery mode (TWRP or stock recovery)**
+   If you have a custom recovery like TWRP installed:
+   - Boot into recovery (usually Power + Volume Up, or Power + Volume Down depending on device).
+   - Use TWRP's file manager or terminal to delete or disable the module directory:
+     ```sh
+     rm -rf /data/adb/modules/<module_id>
+     ```
+   - Reboot to system.
+
+4. **Fastboot + `boot.img` or a full reflash**
+   As a last resort, boot into fastboot mode and either:
+   - Flash a Magisk-unpatched boot image to temporarily drop root (this alone won't remove the module's files, but with root gone the sysfs writes never run, restoring touch), then use ADB or a file manager to remove `/data/adb/modules/<module_id>` before repatching, or
+   - Perform a full factory reset if no other option is available (this wipes user data - genuinely last resort).
+
+**Prevention is easier than recovery** - before relying on this module, always confirm `input2` is *not* your primary touchscreen, and keep USB debugging enabled and a PC with `adb`/`fastboot` on hand while testing.
+
 ## Notes / caveats
 
 - **Device-specific paths**: `input2` and `sprd_backlight` are not universal - the exact input node number and backlight driver name depend on your device's kernel. Confirm these paths exist on your device before relying on this module:
@@ -92,4 +133,3 @@ Remove the module from Magisk Manager's **Modules** tab and reboot. This restore
 - **Bypasses the Android brightness stack**: setting brightness to `0` via this raw sysfs node is intentional here, but it means the system UI's brightness slider won't reflect or control it, and other brightness-related logic (auto-brightness, other apps) may not see this change either.
 - **Persists until next boot**: these are runtime sysfs writes, not permanent kernel config changes. Uninstalling the module (or a kernel/firmware update) fully reverts behavior.
 - **OTA updates may break paths**: a system update can renumber input nodes or rename the backlight driver. If the module silently stops working after an OTA, re-check the paths above first.
-- 
